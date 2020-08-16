@@ -13,3 +13,7 @@ spring:
     cache: false
   application:
     name: springboot-security
+  security:
+    user:
+      name: admin
+      password: admin
