@@ -1,5 +1,6 @@
 package com.li.security.config;
 
+import com.li.security.config.auth.CustomExpiredSessionStrategy;
 import com.li.security.config.auth.MyAuthenticationFailureHandler;
 import com.li.security.config.auth.MyAuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -20,6 +22,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private MyAuthenticationFailureHandler myAuthenticationFailureHandler;
+
+    @Autowired
+    private CustomExpiredSessionStrategy customExpiredSessionStrategy;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -48,9 +53,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // .antMatchers("/syslog", "/sysuser")
                 // .hasAnyRole("admin") // admin 角色可以访问的资源
                 // .hasAnyAuthority("ROLE_admin") // 角色是一种特殊的权限
-                .antMatchers("/syslog").hasAuthority("sys:log")
+                .antMatchers("/syslog").hasAuthority("sys:log")// 有该角色ID才能访问该资源
                 .antMatchers("/sysuser").hasAuthority("sys:user")
-                .anyRequest().authenticated();
+                .anyRequest().authenticated()
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)// Spring Security 精确的控制会话（默认）
+                .invalidSessionUrl("/login.html") //会话超时之后，跳转到一个指定的URL
+                .sessionFixation().migrateSession() // session的固化保护功能
+                .maximumSessions(1) //表示同一个用户最大的登录数量
+                .maxSessionsPreventsLogin(false) // true表示已经登录就不予许再次登录，false表示允许再次登录但是之前的登录会下线。
+                .expiredSessionStrategy(customExpiredSessionStrategy); //session被下线(超时)之后的处理策略。
     }
 
     @Override
