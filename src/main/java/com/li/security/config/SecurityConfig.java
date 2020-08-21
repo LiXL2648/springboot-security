@@ -1,9 +1,6 @@
 package com.li.security.config;
 
-import com.li.security.config.auth.CustomExpiredSessionStrategy;
-import com.li.security.config.auth.MyAuthenticationFailureHandler;
-import com.li.security.config.auth.MyAuthenticationSuccessHandler;
-import com.li.security.config.auth.MyUserDetailsService;
+import com.li.security.config.auth.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +11,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+
+import javax.sql.DataSource;
 
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -30,17 +31,26 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private MyUserDetailsService myUserDetailsService;
 
+    @Autowired
+    private MyLogoutSuccessHandler myLogoutSuccessHandler;
+
+    @Autowired
+    private DataSource dataSource;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        /*
-        http.httpBasic() // 开启httpBasic认证
+        http.logout() // 默认退出url为/logout
+                .logoutUrl("/logout") // 指定退出的url，前端退出按钮需保持一致
+                //.logoutSuccessUrl("/login.html") // 退出后返回的页面
+                .logoutSuccessHandler(myLogoutSuccessHandler)
+                .deleteCookies("JSESSIONID") // 删除cookie
                 .and()
-                .authorizeRequests()
-                .anyRequest()
-                .authenticated(); // 所有请求都需要登录认证才能访问
-        */
-
-        http.csrf().disable() //禁用跨站csrf攻击防御，后面的章节会专门讲解
+                .rememberMe()// 开启记住我的功能
+                .rememberMeParameter("rememberMe") // 设置记住我参数名
+                .rememberMeCookieName("remember-me-cookie") // 记住我的cookie名
+                .tokenValiditySeconds(7 * 24 * 60 * 60) // 记住我的有效时长
+                .tokenRepository(persistentTokenRepository()) //token数据库存储方式
+                .and().csrf().disable() //禁用跨站csrf攻击防御，后面的章节会专门讲解
                 .formLogin()
                 .loginPage("/login.html") // 用户未登录时，访问任何资源都转跳到该路径，即登录页
                 .loginProcessingUrl("/login") // 登录表单form中action的地址，也就是处理认证请求的路径
@@ -70,6 +80,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .maximumSessions(1) //表示同一个用户最大的登录数量
                 .maxSessionsPreventsLogin(false) // true表示已经登录就不予许再次登录，false表示允许再次登录但是之前的登录会下线。
                 .expiredSessionStrategy(customExpiredSessionStrategy); //session被下线(超时)之后的处理策略。
+        /*
+        http.httpBasic() // 开启httpBasic认证
+                .and()
+                .authorizeRequests()
+                .anyRequest()
+                .authenticated(); // 所有请求都需要登录认证才能访问
+        */
     }
 
     @Override
@@ -100,6 +117,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
 
         web.ignoring() // 将项目中的静态资源路径开放出来
-                .antMatchers("/css/**", "/fonts/**", "/img/**", "/js/**", "/webjars/**");
+                .antMatchers("/css/**", "/fonts/**", "/img/**", "/js/**", "/webjars/**", "/favicon.ico");
+    }
+
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository() {
+        JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+        tokenRepository.setDataSource(dataSource);
+        return tokenRepository;
     }
 }
