@@ -3,6 +3,7 @@ package com.li.security.config;
 import com.li.security.config.auth.CustomExpiredSessionStrategy;
 import com.li.security.config.auth.MyAuthenticationFailureHandler;
 import com.li.security.config.auth.MyAuthenticationSuccessHandler;
+import com.li.security.config.auth.MyUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +27,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private CustomExpiredSessionStrategy customExpiredSessionStrategy;
 
+    @Autowired
+    private MyUserDetailsService myUserDetailsService;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         /*
@@ -48,14 +52,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/login.html", "/", "/login").permitAll() // 不需要通过登录验证就可以被访问的资源路径
-                .antMatchers("/biz1", "/biz2") // 需要对外暴露的资源路径
-                .hasAnyAuthority("ROLE_user", "ROLE_admin") // user 和 admin 角色可以访问的资源
+                // .antMatchers("/biz1", "/biz2") // 需要对外暴露的资源路径
+                // .hasAnyAuthority("ROLE_user", "ROLE_admin") // user 和 admin 角色可以访问的资源
                 // .antMatchers("/syslog", "/sysuser")
                 // .hasAnyRole("admin") // admin 角色可以访问的资源
                 // .hasAnyAuthority("ROLE_admin") // 角色是一种特殊的权限
-                .antMatchers("/syslog").hasAuthority("sys:log")// 有该角色ID才能访问该资源
-                .antMatchers("/sysuser").hasAuthority("sys:user")
-                .anyRequest().authenticated()
+                // .antMatchers("/syslog").hasAuthority("/updUser")// 有该角色ID才能访问该资源
+                // .antMatchers("/sysuser").hasAuthority("/delUser")
+                // .anyRequest().authenticated()
+                .antMatchers("/index").authenticated() // 用户登录即可访问的页面，即不需要任何权限
+                .anyRequest().access("@rbacService.hasPermission(request, authentication)") //判断用户是否具备访问资源的权限
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)// Spring Security 精确的控制会话（默认）
@@ -68,6 +74,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        /*
         auth.inMemoryAuthentication()
                 .withUser("user")
                 .password(passwordEncoder().encode("2648"))
@@ -79,6 +86,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorities("sys:log","sys:user")
                 .and()
                 .passwordEncoder(passwordEncoder()); // 配置BCrypt加密
+        */
+
+        auth.userDetailsService(myUserDetailsService).passwordEncoder(passwordEncoder());
     }
 
     @Bean

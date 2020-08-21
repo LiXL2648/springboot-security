@@ -49,7 +49,7 @@
                 return false;
             }
             $.ajax({
-                url: '/springboot-security/login',
+                url: '/login',
                 type: 'post',
                 data: {
                     username: username,
@@ -58,7 +58,7 @@
                 success: function (res) {
                     if (res.isok) {
                         alert("success");
-                        location.href = '/springboot-security' + res.data;
+                        location.href = res.data;
                     } else {
                         alert(JSON.stringify(res));
                     }
