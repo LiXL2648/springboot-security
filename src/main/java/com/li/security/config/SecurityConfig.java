@@ -61,7 +61,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .failureHandler(myAuthenticationFailureHandler)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/login.html", "/", "/login").permitAll() // 不需要通过登录验证就可以被访问的资源路径
+                .antMatchers("/login.html", "/", "/login", "/kaptcha").permitAll() // 不需要通过登录验证就可以被访问的资源路径
                 // .antMatchers("/biz1", "/biz2") // 需要对外暴露的资源路径
                 // .hasAnyAuthority("ROLE_user", "ROLE_admin") // user 和 admin 角色可以访问的资源
                 // .antMatchers("/syslog", "/sysuser")
