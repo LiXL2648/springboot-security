@@ -23,8 +23,8 @@ public class MyAuthenticationFailureHandler extends SimpleUrlAuthenticationFailu
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
-    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,  AuthenticationException exception)
-            throws IOException, ServletException {
+    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
+                                        AuthenticationException exception) throws IOException, ServletException {
 
         String errorMsg = "用户名或者密码输入错误!";
         if(exception instanceof SessionAuthenticationException){

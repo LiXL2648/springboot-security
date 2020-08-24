@@ -9,7 +9,7 @@ public class AjaxResponse {
 
     private Integer code;
 
-    private String Message;
+    private String message;
 
     private Object data;
 

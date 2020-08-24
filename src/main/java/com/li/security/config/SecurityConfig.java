@@ -1,6 +1,8 @@
 package com.li.security.config;
 
 import com.li.security.config.auth.*;
+import com.li.security.config.auth.imagecode.CaptchaConfig;
+import com.li.security.config.auth.imagecode.CaptchaFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
@@ -35,11 +38,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private MyLogoutSuccessHandler myLogoutSuccessHandler;
 
     @Autowired
+    private CaptchaFilter captchaFilter;
+
+    @Autowired
     private DataSource dataSource;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.logout() // 默认退出url为/logout
+        http.addFilterBefore(captchaFilter, UsernamePasswordAuthenticationFilter.class)
+                .logout() // 默认退出url为/logout
                 .logoutUrl("/logout") // 指定退出的url，前端退出按钮需保持一致
                 //.logoutSuccessUrl("/login.html") // 退出后返回的页面
                 .logoutSuccessHandler(myLogoutSuccessHandler)

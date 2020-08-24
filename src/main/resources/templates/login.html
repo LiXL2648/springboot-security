@@ -38,7 +38,7 @@
             position: relative;
         }
 
-        #captcha {
+        #captchaCode {
             padding-right: 112px;
         }
 
@@ -65,7 +65,7 @@
 
             <div class="form-group">
                 <label for="password">验证码</label>
-                <input type="text" class="form-control" name="captcha" id="captcha" placeholder="请输入验证码">
+                <input type="text" class="form-control" name="captchaCode" id="captchaCode" placeholder="请输入验证码">
                 <img th:src="@{/kaptcha}" id="kaptcha" width="100px" height="38px">
             </div>
 
@@ -91,6 +91,7 @@
             var username = $('#username').val();
             var password = $('#password').val();
             var rememberMe = $('#rememberMe').is(":checked");
+            var captchaCode = $('#captchaCode').val();
             if (username == '' || password == '') {
                 alert("用户名或者密码不能为空")
                 return false;
@@ -101,19 +102,21 @@
                 data: {
                     username: username,
                     password: password,
-                    rememberMe: rememberMe
+                    rememberMe: rememberMe,
+                    captchaCode: captchaCode
                 },
                 success: function (res) {
                     if (res.isok) {
                         alert("success");
                         location.href = res.data;
                     } else {
-                        alert(JSON.stringify(res));
+                        alert(res.message);
                     }
 
                 },
                 error: function (e) {
-                    // alert(e)
+                    console.log(e)
+                    alert(e.responseText)
                 }
             });
             return false;

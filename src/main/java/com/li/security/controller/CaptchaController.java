@@ -2,6 +2,7 @@ package com.li.security.controller;
 
 import com.google.code.kaptcha.impl.DefaultKaptcha;
 import com.li.security.config.auth.imagecode.CaptchaImageVO;
+import com.li.security.config.auth.imagecode.MyConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,7 +33,7 @@ public class CaptchaController {
 
         // 将验证码保存到session中，并设置过期时间为两分钟
         String captchaText = captchaProducer.createText();
-        session.setAttribute("captchaText", new CaptchaImageVO(captchaText, 2 * 60));
+        session.setAttribute(MyConstants.CAPTCHA_SESSION_KEY, new CaptchaImageVO(captchaText, 2 * 60));
 
         // 将验证码图片返回到前端
         try(ServletOutputStream out = response.getOutputStream();) {
