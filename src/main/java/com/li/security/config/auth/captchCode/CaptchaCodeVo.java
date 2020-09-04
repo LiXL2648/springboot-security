@@ -1,14 +1,14 @@
-package com.li.security.config.auth.imagecode;
+package com.li.security.config.auth.captchCode;
 
 import java.time.LocalDateTime;
 
-public class CaptchaImageVO {
+public class CaptchaCodeVo {
 
     private String code;
 
     private LocalDateTime expireTime;
 
-    public CaptchaImageVO(String code,  int expireAfterSeconds) {
+    public CaptchaCodeVo(String code, int expireAfterSeconds) {
         this.code = code;
         this.expireTime = LocalDateTime.now().plusSeconds(expireAfterSeconds);
     }

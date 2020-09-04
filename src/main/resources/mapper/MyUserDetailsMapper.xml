@@ -5,14 +5,17 @@
 <mapper namespace="com.li.security.config.auth.MyUserDetailsMapper">
 
     <select id="findByUserName" resultType="com.li.security.config.auth.MyUserDetails">
-        SELECT username, password, enabled FROM sys_user WHERE username = #{username}
+        select username, password, enabled
+        from sys_user
+        where username = #{username} or phone = #{username}
     </select>
 
     <select id="findRoleByUserName" resultType="string">
-        SELECT role_code FROM sys_user u
-        LEFT JOIN user_role ur ON u.id = ur.user_id
-        LEFT JOIN sys_role r ON r.id = ur.role_id
-        WHERE u.username = #{username}
+        select role_code
+        from sys_user u
+        left join user_role ur on u.id = ur.user_id
+        left join sys_role r on r.id = ur.role_id
+        where u.username = #{username} or u.phone = #{username}
    </select>
 
     <select id="findAuthorityByRoleCodes" resultType="string">

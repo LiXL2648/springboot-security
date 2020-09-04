@@ -1,8 +1,8 @@
 package com.li.security.config;
 
 import com.li.security.config.auth.*;
-import com.li.security.config.auth.imagecode.CaptchaConfig;
-import com.li.security.config.auth.imagecode.CaptchaFilter;
+import com.li.security.config.auth.captchCode.CaptchaCodeFilter;
+import com.li.security.config.auth.smsCode.SmsCodeSecurityConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,7 +38,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private MyLogoutSuccessHandler myLogoutSuccessHandler;
 
     @Autowired
-    private CaptchaFilter captchaFilter;
+    private CaptchaCodeFilter captchaFilter;
+
+    @Autowired
+    private SmsCodeSecurityConfig smsCodeSecurityConfig;
 
     @Autowired
     private DataSource dataSource;
@@ -66,9 +69,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //.defaultSuccessUrl("/index") // 登录认证成功后默认转跳的路径
                 .successHandler(myAuthenticationSuccessHandler)
                 .failureHandler(myAuthenticationFailureHandler)
+                .and().apply(smsCodeSecurityConfig)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/login.html", "/", "/login", "/kaptcha").permitAll() // 不需要通过登录验证就可以被访问的资源路径
+                .antMatchers("/login.html", "/", "/login", "/kaptcha", "/smslogin", "/smsCode", "/smsLogin").permitAll() // 不需要通过登录验证就可以被访问的资源路径
                 // .antMatchers("/biz1", "/biz2") // 需要对外暴露的资源路径
                 // .hasAnyAuthority("ROLE_user", "ROLE_admin") // user 和 admin 角色可以访问的资源
                 // .antMatchers("/syslog", "/sysuser")

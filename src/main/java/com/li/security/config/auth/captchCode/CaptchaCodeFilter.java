@@ -1,6 +1,7 @@
-package com.li.security.config.auth.imagecode;
+package com.li.security.config.auth.captchCode;
 
 import com.li.security.config.auth.MyAuthenticationFailureHandler;
+import com.li.security.config.auth.MyConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.session.SessionAuthenticationException;
@@ -11,10 +12,11 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 @Component
-public class CaptchaFilter extends OncePerRequestFilter {
+public class CaptchaCodeFilter extends OncePerRequestFilter {
 
     @Autowired
     private MyAuthenticationFailureHandler myAuthenticationFailureHandler;
@@ -30,6 +32,7 @@ public class CaptchaFilter extends OncePerRequestFilter {
             } catch (AuthenticationException e) {
                 // 3.捕获步骤1中校验出现异常，交给失败处理类进行进行处理
                 myAuthenticationFailureHandler.onAuthenticationFailure(request, response, e);
+                return;
             }
         }
         filterChain.doFilter(request, response);
@@ -41,17 +44,21 @@ public class CaptchaFilter extends OncePerRequestFilter {
             throw new SessionAuthenticationException("请输入验证码");
         }
 
-        CaptchaImageVO captchaImageVO = (CaptchaImageVO) request.getSession().getAttribute(MyConstants.CAPTCHA_SESSION_KEY);
-        if (captchaImageVO == null) {
+        HttpSession session = request.getSession();
+        CaptchaCodeVo captchaCodeVo = (CaptchaCodeVo) session.getAttribute(MyConstants.CAPTCHA_SESSION_KEY);
+        if (captchaCodeVo == null) {
             throw new SessionAuthenticationException("验证码不存在，请重新加载");
         }
 
-        if (captchaImageVO.isExpire()) {
+        if (captchaCodeVo.isExpire()) {
+            session.removeAttribute(MyConstants.CAPTCHA_SESSION_KEY);
             throw new SessionAuthenticationException("验证码已过期");
         }
 
-        if (!captchaImageVO.getCode().equalsIgnoreCase(captchaCode)) {
+        if (!captchaCodeVo.getCode().equalsIgnoreCase(captchaCode)) {
             throw new SessionAuthenticationException("验证码不匹配");
         }
+
+        session.removeAttribute(MyConstants.CAPTCHA_SESSION_KEY);
     }
 }

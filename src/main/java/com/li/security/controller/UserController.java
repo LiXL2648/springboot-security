@@ -38,4 +38,8 @@ public class UserController {
         return "biz2";
     }
 
+    @GetMapping("/smslogin")
+    public String smsLogin() {
+        return "smslogin";
+    }
 }

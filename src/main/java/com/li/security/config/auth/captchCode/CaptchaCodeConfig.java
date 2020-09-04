@@ -1,4 +1,4 @@
-package com.li.security.config.auth.imagecode;
+package com.li.security.config.auth.captchCode;
 
 import com.google.code.kaptcha.impl.DefaultKaptcha;
 import com.google.code.kaptcha.util.Config;
@@ -11,7 +11,7 @@ import java.util.Properties;
 
 @Configuration
 @PropertySource(value = { "classpath:kaptcha.properties" })
-public class CaptchaConfig {
+public class CaptchaCodeConfig {
 
     @Value("${kaptcha.border}")
     private String border;
